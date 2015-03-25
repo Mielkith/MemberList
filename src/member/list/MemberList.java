@@ -22,16 +22,22 @@ import java.util.Scanner;
 
 public class MemberList {
 
-    static ArrayList<ArrayList<String>> RUSU ;
-    static ArrayList<ArrayList<String>> AGB ;
-    static ArrayList<Integer> missing;
+    static private ArrayList<ArrayList<String>> RUSU ;
+    static private ArrayList<ArrayList<String>> AGB ;
+    static private ArrayList<Integer> missing;
+    static private Float threshold;
+    
+    static public void SetThreshold(Float t)
+    {
+        threshold = t;
+    }
   
     
     
     /**
      * @param args the command line arguments
      */
-    public static void begin(String[] args) {
+    static public void begin(String[] args) {
       //paths for the all the files
         
         //TODO Make this dynamic
@@ -45,6 +51,9 @@ public class MemberList {
      String agbPath = args[0];
      String rusuPath = args[1];
      String missingPath =  args[2];
+     String membersPath = args[3];
+     
+     
    
        
        if (!missingPath.endsWith(".csv"))
@@ -59,6 +68,7 @@ public class MemberList {
         ArrayList<Integer> typos = new ArrayList<Integer>();
         RUSU = new ArrayList<ArrayList<String>>();
         AGB = new  ArrayList<ArrayList<String>>();
+        ArrayList<SmallStruct> members = new ArrayList<SmallStruct>();
         
         
         RUSU = ReadFile(rusuPath);
@@ -73,7 +83,7 @@ public class MemberList {
         {
             //smallStruct will tell us if a line is present, its line number and if it contained a typo
             //the line number is recorded so we can delete it from the AGB list and speed up comparison
-            SmallStruct s = IsNamePresent(RUSU.get(i).get(0), RUSU.get(i).get(1));
+            SmallStruct s = IsNamePresent(RUSU.get(i).get(0), RUSU.get(i).get(1), i);
              
       //if it is not present- add it to the missing list
             if(!s.IsFound())
@@ -83,12 +93,13 @@ public class MemberList {
                 
             }          
             //if it is present- remove that name from AGB for future checks
-            else
+            else 
             {
                 if (s.IsTypos())
                 {
                     typos.add(i);
                 }
+                members.add(s);
                 AGB.remove(s.GetLineNumber());
             }
         }
@@ -98,9 +109,51 @@ public class MemberList {
             
         }
         
+        
         }
         //write the missing list to file
-        try{
+         WriteMissing(missingPath, typos);
+        
+        if (args.length == 4)
+        {
+            WriteMembers(membersPath, members);
+        }
+    }
+   
+    static public void WriteMembers(String path, ArrayList<SmallStruct> members)
+    {
+            try{
+            FileWriter  writer = new FileWriter(path,false);
+            for(int missingNames: missing)
+            {
+                writer.write("Name");
+                writer.write(",");
+                writer.write("Student Number");
+                writer.write(",");
+                writer.write("DOB");
+                writer.write("\n");
+            }
+            
+            
+            for (int i = 0; i < members.size(); i++)
+            {
+                writer.write(members.toString());
+            }
+            writer.close();
+        }
+        catch(IOException e)
+        {
+            System.out.println(e);
+        }
+         
+    }
+    
+    
+    
+    
+    static public void WriteMissing(String missingPath, ArrayList<Integer> typos)
+    {
+            try{
             FileWriter  writer = new FileWriter(missingPath,false);
             for(int missingNames: missing)
             {
@@ -133,7 +186,6 @@ public class MemberList {
         }
          
     }
-   
     //Read the file and perfrom string cleaning (case and white space)
     static public ArrayList<ArrayList<String>> ReadFile(String fileName)
     {
@@ -173,7 +225,7 @@ public class MemberList {
     
     
     //Retuns a SmallStruct indiciating if a name is present and weather it is spelt wrong
-    static public SmallStruct IsNamePresent(String needle1, String needle2)
+    static public SmallStruct IsNamePresent(String needle1, String needle2, int rusuIndex)
     {
         /*AGB is in the format: 0First Name, 1Surname, 2Num, 3Salutation, 4M/F,5,6,7,8,9,10,11Active,12Sen/Nov,13Club,14Due,15PaidDate,16,17DOB
          RUSU is in the format: 0SurName/FirstName, 1Card Nom, 2Joined, 3Expires
@@ -194,12 +246,15 @@ public class MemberList {
                 int score = JumbleMatch(needle1, needle2, match1, match2);
                  if (score == 2) 
                  {
-                     return new SmallStruct(j, true);
+                     SmallStruct s = new SmallStruct(j, true, AGB.get(j).get(17), RUSU.get(rusuIndex).get(2));
+                     s.SetName(RUSU.get(rusuIndex).get(0) + "," + RUSU.get(rusuIndex).get(1));
+                     return new SmallStruct(j, true, AGB.get(j).get(17), RUSU.get(rusuIndex).get(1));
                  }
                  else if (score == 1)
                  {
-                     //line number, present and typo
-                     return new SmallStruct(j, true, true);
+                      SmallStruct s = new SmallStruct(j, true,true, AGB.get(j).get(17), RUSU.get(rusuIndex).get(2));
+                     s.SetName(RUSU.get(rusuIndex).get(0) + "," + RUSU.get(rusuIndex).get(1));
+                     return new SmallStruct(j, true, AGB.get(j).get(17), RUSU.get(rusuIndex).get(1));
                  }
             //    } 
                 
@@ -287,7 +342,7 @@ public class MemberList {
                 
                 //threshold 
                 //TODO Set this dynamically
-                if (distance < 0.3)
+                if (distance < threshold)
                 {
                     score++;
                 }

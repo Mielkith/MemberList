@@ -13,6 +13,10 @@ public class SmallStruct {
     private Boolean present;
     private int lineNumber;
     private Boolean typo;
+    private String DOB;
+    private String studentNum;
+    private String name;
+    
     
     SmallStruct()
     {
@@ -20,18 +24,22 @@ public class SmallStruct {
         typo = false;
     }
 
-    public SmallStruct(int x, boolean isFound)
+    public SmallStruct(int x, boolean isFound, String dob, String studentNum)
     {
        lineNumber = x;
        present = isFound;
        typo = false;
+        this.DOB = dob;
+       this.studentNum = studentNum;
     }
     
-     public SmallStruct(int x, boolean isFound, boolean typo)
+     public SmallStruct(int x, boolean isFound, boolean typo, String dob, String studentNum)
     {
        lineNumber = x;
        present = isFound;
        this.typo = typo;
+       this.DOB = dob;
+       this.studentNum = studentNum;
     }
     
     
@@ -50,5 +58,31 @@ public class SmallStruct {
         return typo;
     }
     
+    public void SetDOB(String dob)
+    {
+        this.DOB = dob;
+    }
+    
+      public void SetStudentNum(String studentNum)
+    {
+        this.studentNum = studentNum;
+    }
+      
+         public void SetName(String name)
+    {   
+        this.name = name;
+    }
+    
+         public String ToString()
+         {
+             StringBuilder sb = new StringBuilder();
+             sb.append(this.name);
+             sb.append(",");
+             sb.append(this.studentNum);
+             sb.append(",");
+             sb.append(this.DOB);
+             sb.append("\n");
+             return sb.toString();
+         }
     
 }

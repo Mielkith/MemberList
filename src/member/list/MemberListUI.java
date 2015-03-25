@@ -7,15 +7,13 @@ package member.list;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
-
-/**
+/*
  *
  * @author Weary
  */
@@ -59,6 +57,7 @@ public class MemberListUI extends  javax.swing.JFrame  {
         fileChooserRUSU = new javax.swing.JFileChooser();
         fileChooserAGB = new javax.swing.JFileChooser();
         fileChooserMissing = new javax.swing.JFileChooser();
+        fileChooserMembers = new javax.swing.JFileChooser();
         jPanel1 = new javax.swing.JPanel();
         run = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -69,22 +68,35 @@ public class MemberListUI extends  javax.swing.JFrame  {
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        thresholdTextBox = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        memberListPathText = new java.awt.TextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         openRUSU = new javax.swing.JMenuItem();
         openAGB = new javax.swing.JMenuItem();
         outPath = new javax.swing.JMenuItem();
+        OpenMembers = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
 
         fileChooserRUSU.setDialogTitle("Select the RUSU list");
+        fileChooserRUSU.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
         fileChooserRUSU.setFileFilter(new MyCustomFilter());
         fileChooserRUSU.setCurrentDirectory( new File(System.getProperty("user.dir")));
 
+        fileChooserAGB.setDialogTitle("Select AGB");
         fileChooserAGB.setFileFilter(fileChooserRUSU.getFileFilter());
-        fileChooserAGB.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
+        fileChooserAGB.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
         fileChooserAGB.setCurrentDirectory( new File(System.getProperty("user.dir")));
 
         fileChooserMissing.setCurrentDirectory( new File(System.getProperty("user.dir")));
+        fileChooserMissing.setDialogTitle("Select Output");
+        fileChooserMissing.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
+
+        fileChooserMembers.setDialogTitle("Select the output file");
+        fileChooserMembers.setFileFilter(new MyCustomFilter());
+        fileChooserMembers.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
+        fileChooserRUSU.setCurrentDirectory( new File(System.getProperty("user.dir")));
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -105,7 +117,16 @@ public class MemberListUI extends  javax.swing.JFrame  {
 
         jLabel3.setText("RUSU Path");
 
-        jLabel4.setText("Out Path");
+        jLabel4.setText("Member List Path");
+
+        thresholdTextBox.setText("0.4");
+        thresholdTextBox.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                thresholdTextBoxPropertyChange(evt);
+            }
+        });
+
+        jLabel5.setText("Missing Persons");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -118,17 +139,22 @@ public class MemberListUI extends  javax.swing.JFrame  {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel4)
-                            .addComponent(jLabel3))
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel5))
                         .addGap(25, 25, 25)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(rusuFilePathText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
+                            .addComponent(rusuFilePathText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE)
                             .addComponent(agbFilePathText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(missingFilePathText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(missingFilePathText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(memberListPathText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(233, 233, 233)
-                        .addComponent(run)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
+                        .addComponent(run)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(thresholdTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -148,22 +174,31 @@ public class MemberListUI extends  javax.swing.JFrame  {
                             .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel4)
-                            .addComponent(missingFilePathText, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(run)
-                        .addGap(0, 208, Short.MAX_VALUE))
+                            .addComponent(missingFilePathText, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel5))
+                        .addGap(7, 7, 7)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(memberListPathText, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4))
+                        .addGap(13, 13, 13)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(run)
+                            .addComponent(thresholdTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 177, Short.MAX_VALUE))
                     .addComponent(jScrollPane1))
                 .addGap(25, 25, 25))
         );
-
-        missingFilePathText.setText(System.getProperty("user.dir").toString());
 
         jMenuBar1.setBackground(new java.awt.Color(34, 34, 34));
         jMenuBar1.setForeground(new java.awt.Color(255, 255, 255));
         jMenuBar1.setInheritsPopupMenu(true);
 
         jMenu1.setText("File");
+        jMenu1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenu1ActionPerformed(evt);
+            }
+        });
 
         openRUSU.setText("Open RUSU");
         openRUSU.addActionListener(new java.awt.event.ActionListener() {
@@ -181,13 +216,21 @@ public class MemberListUI extends  javax.swing.JFrame  {
         });
         jMenu1.add(openAGB);
 
-        outPath.setText("Set Output Path");
+        outPath.setText("Set Missing Path");
         outPath.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 outPathActionPerformed(evt);
             }
         });
         jMenu1.add(outPath);
+
+        OpenMembers.setText("Member List Path");
+        OpenMembers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OpenMembersActionPerformed(evt);
+            }
+        });
+        jMenu1.add(OpenMembers);
 
         Exit.setText("Exit");
         Exit.addActionListener(new java.awt.event.ActionListener() {
@@ -248,11 +291,93 @@ public class MemberListUI extends  javax.swing.JFrame  {
         }
     }//GEN-LAST:event_openAGBActionPerformed
 
+    private void BadFileErrorMessage(String fileName)
+    {
+          JFrame frame = new JFrame("File Path Error");
+              // show a joptionpane dialog using showMessageDialog
+            JOptionPane.showMessageDialog(frame,
+                "Please check the file path for" + fileName, 
+                "Threshold Problem",JOptionPane.WARNING_MESSAGE);
+           
+    }
+    
     private void runActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runActionPerformed
-       String paths[] = {fileChooserAGB.getSelectedFile().toString(), 
-       fileChooserRUSU.getSelectedFile().toString(),
-      fileChooserMissing.getSelectedFile().toString()};
+       String rusu,agb,missing, members = null;
         
+        if ( fileChooserAGB.getSelectedFile().canRead())
+       {     
+         agb =  fileChooserAGB.getSelectedFile().toString();
+       }
+        else {BadFileErrorMessage("AGB"); return;} 
+        
+        if ( fileChooserRUSU.getSelectedFile().canRead())
+       {     
+         rusu =  fileChooserRUSU.getSelectedFile().toString();
+       }
+        else {BadFileErrorMessage("RUSU"); return;} 
+     
+        if (!fileChooserMissing.getSelectedFile().toString().endsWith(".csv"))
+        {
+            missing = fileChooserMissing.getSelectedFile().toString() + "\\missing.csv";
+            File file = new File(missing);
+            try{
+            file.createNewFile();
+            }
+            catch (Exception e)
+            {
+                if (!file.isFile())
+                {
+                    BadFileErrorMessage("Missing");
+                }
+            }
+        }
+        else  if ( fileChooserMissing.getSelectedFile().canRead())
+        {     
+         missing =  fileChooserMissing.getSelectedFile().toString();
+        }
+        else {BadFileErrorMessage("Missing"); return;} 
+        
+        
+         if (!fileChooserMembers.getSelectedFile().toString().endsWith(".csv"))
+        {
+            members = fileChooserMembers.getSelectedFile().toString() + "\\MemberList.csv";
+            File file = new File(members);
+            try{
+            file.createNewFile();
+            }
+            catch (Exception e)
+            {
+                if (!file.isFile())
+                {
+                    BadFileErrorMessage("Members");
+                }
+            }
+        }
+        else  if ( fileChooserMembers.getSelectedFile().canRead())
+        {     
+         members =  fileChooserMembers.getSelectedFile().toString();
+        }
+        else {BadFileErrorMessage("Members"); return;} 
+        
+        
+        
+    
+        
+        String paths[] = {agb,rusu, missing, members};
+       try{
+       String s = thresholdTextBox.getText().toString();
+       Float d = Float.parseFloat(s);
+        MemberList.SetThreshold(d);
+       }
+       catch (NumberFormatException e)
+       {
+            JFrame frame = new JFrame("Threshold Error");
+              // show a joptionpane dialog using showMessageDialog
+            JOptionPane.showMessageDialog(frame,
+                "Please check the threshold entry (should be a number, ideally less than 1)", 
+                "Threshold Problem",JOptionPane.WARNING_MESSAGE);
+            return;
+       }
         MemberList.begin(paths);
        
          File file = new File(missingFilePathText.getText());
@@ -289,6 +414,28 @@ public class MemberListUI extends  javax.swing.JFrame  {
             System.out.println("File access cancelled by user.");
         }
     }//GEN-LAST:event_outPathActionPerformed
+
+    private void thresholdTextBoxPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_thresholdTextBoxPropertyChange
+       
+      return;
+    }//GEN-LAST:event_thresholdTextBoxPropertyChange
+
+    private void jMenu1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu1ActionPerformed
+          
+    }//GEN-LAST:event_jMenu1ActionPerformed
+
+    private void OpenMembersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OpenMembersActionPerformed
+          int returnVal = fileChooserMembers.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooserMembers.getSelectedFile();
+          
+              // What to do with the file, e.g. display it in a TextArea
+                memberListPathText.setText(fileChooserMembers.getSelectedFile().toString());
+        } 
+        else {
+            System.out.println("File access cancelled by user.");
+        }
+    }//GEN-LAST:event_OpenMembersActionPerformed
 
     /**
      * @param args the command line arguments
@@ -327,17 +474,21 @@ public class MemberListUI extends  javax.swing.JFrame  {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem Exit;
+    private javax.swing.JMenuItem OpenMembers;
     private java.awt.TextArea agbFilePathText;
     private javax.swing.JFileChooser fileChooserAGB;
+    private javax.swing.JFileChooser fileChooserMembers;
     private javax.swing.JFileChooser fileChooserMissing;
     private javax.swing.JFileChooser fileChooserRUSU;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private java.awt.TextArea memberListPathText;
     private java.awt.TextArea missingFilePathText;
     private javax.swing.JTextArea missingNames;
     private javax.swing.JMenuItem openAGB;
@@ -345,5 +496,6 @@ public class MemberListUI extends  javax.swing.JFrame  {
     private javax.swing.JMenuItem outPath;
     private javax.swing.JButton run;
     private java.awt.TextArea rusuFilePathText;
+    private javax.swing.JTextField thresholdTextBox;
     // End of variables declaration//GEN-END:variables
 }
